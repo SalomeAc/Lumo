@@ -189,7 +189,7 @@ main {
   align-items: center;
   margin-bottom: 1.5rem;
   background-color: #b9b4b4;
-  padding-left: 30px;
+  padding-left: 20px;
   padding-right: 20px;
   border-radius: 10px;
 }
@@ -206,15 +206,16 @@ main {
 .circle {
   width: 25px;
   height: 25px;
-  border-radius: 80%;
+  border-radius: 50%;
   display: inline-block;
-  
+  background: transparent;
+  border: 3px solid;
+  margin-right: 10px;
 }
-
-.circle.blue { background: #1e88e5; }
-.circle.yellow { background: #f4ad14; }
-.circle.green { background: #87cf23; }
-.circle.red { background: #e53935; }
+.circle.blue { border-color: #1e88e5; }
+.circle.yellow { border-color: #f4ad14; }
+.circle.green { border-color: #87cf23; }
+.circle.gray { border-color: #726a6a; }
 
 /* Button + */
 .add-task-btn {
@@ -235,7 +236,7 @@ main {
 .task-card {
   background: #d9d9d9;
   border-radius: 1rem;
-  padding: 1.2rem;
+  padding: 1rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -247,13 +248,16 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-content: center;
 }
 
 .task-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
 }
 
 .task-actions button {
@@ -269,4 +273,48 @@ main {
   color: #555;
   display: flex;
   justify-content: flex-end;
+}
+
+/* Modal styles for create-task */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-left: 5rem;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-window {
+    background: #7b8c94;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    min-width: 320px;
+    max-width: 90vw;
+    position: relative;
+    justify-items: center;
+
+}
+
+.previous-btn {
+    color: #000000;
+    
+    position: absolute;
+    left: 16px;
+    top: 18px;
+    right: 16px;
+    border: none;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 700;
+
+    display: flex;
+    align-items: center;
+
 }

@@ -1,0 +1,65 @@
+<div id="container">
+
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    </head>
+
+    <div class="content-wrapper">
+        <aside>
+            <div class="user-info">
+                <div class="welcome">Welcome, John Doe</div>
+
+            </div>
+            <div class="sync-time">Last time synchronized: </div>
+            <div class="sync-date"> dd/mm/yy 00:00 </div>
+
+            <nav>
+                <ul id="static-ul">
+                    <hr />
+                    <li><a href="#/ongoing">Ongoing</a></li>
+                    <li><a href="#/unassigned">Unassigned</a></li>
+                    <li><a href="#/completed">Completed</a></li>
+                    <li><a href="#/dashboard">All</a></li>
+                </ul>
+
+                <ul id="dynamic-ul"></ul>
+            </nav>
+
+        </aside>
+
+
+
+        <!-- Main Content Area -->
+        <main>
+
+            <!-- Modal structure for create-task -->
+            <div id="modal-overlay" class="modal-overlay">
+                <div class="modal-window">
+                        <div >
+                            <a class="previous-btn" href="#/dashboard">❮</a>
+
+                        </div>
+                        
+                        <h2 style="font-size: 1.3rem;">Create new task</h2>
+                    <form>
+                        <label for="task-title">Title:</label>
+                        <input type="text" id="task-title" name="task-title" required>
+                        <label for="task-desc">Description:</label>
+                        <textarea id="task-desc" name="task-desc" required></textarea>
+                        <label for="task-date">Due Date:</label>
+                        <input type="date" id="task-date" name="task-date" required>
+                        <input type="time" id="task-time" name="task-time" required>
+                        <button type="submit">Create</button>
+                    </form>
+                </div>
+            </div>
+            <script>
+                function closeModal() {
+                    document.getElementById('modal-overlay').style.display = 'none';
+                }
+                
+            
+            </script>
+        </main>
+    </div>
+</div>

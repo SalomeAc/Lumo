@@ -37,7 +37,7 @@ class UserController extends GlobalController {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const existingUser = await this.dao.model.findOne({ email });
+      const existingUser = await this.dao.findOne({ email });
       if (existingUser) {
         console.log(
           `Registration rejected 409 Conflict: email already registered (${email})`,
