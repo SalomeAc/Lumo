@@ -146,14 +146,42 @@ async function initProfile() {
 function initRegister() {
   const form = document.getElementById("registerForm");
   const msg = document.getElementById("message");
+  const spinner = document.getElementById("spinner");
 
   if (!form) return;
+
+  // Agarra el evento invalid para cambiar el mensaje de html y hacer uno propio
+  form.addEventListener("invalid", (e) => {
+    const input = e.target;
+    // Password validation logic.
+    if (input.name === "password") {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!passwordRegex.test(input.value)) {
+        input.setCustomValidity(
+          "The password must be at least 8 characters include an uppercase letter, lowercase letter, number and a special character."
+        );
+      } else {
+        input.setCustomValidity("");
+      }
+    }
+    // logica del email
+    if (input.name === "email") {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(input.value)) {
+            input.setCustomValidity(
+                "Please enter a valid email address (e.g., user@domain.com)."
+            );
+        } else {
+            input.setCustomValidity("");
+        }
+    }
+  }, true);
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
+    msg.hidden = true;
 
-    // Retrieves the data from the form.
     const data = {
       firstName: form.firstName.value.trim(),
       lastName: form.lastName.value.trim(),
@@ -163,82 +191,23 @@ function initRegister() {
       confirmPassword: form.confirmPassword.value.trim(),
     };
 
-    // Field completion validation.
-    if (Object.values(data).some((v) => !v)) {
-      msg.textContent = "Please fill out all the fields.";
-      return;
-    }
-
-    // Age validation.
-    const ageNum = Number(data.age);
-    if (isNaN(ageNum) || ageNum < 13) {
-      msg.textContent = "Age must be greater or equal to 13.";
-      return;
-    }
-
-    // Password validation.
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    if (!passwordRegex.test(data.password)) {
-      msg.textContent =
-        "The password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.";
-      return;
-    }
-
-    // Confirm password validation.
-    if (data.password !== data.confirmPassword) {
-      msg.textContent = "Passwords do not match.";
-      return;
-    }
-
-    form.querySelector('button[type="submit"]').disabled = true;
+    const formButton = form.querySelector('button[type="submit"]');
 
     try {
-      // Retrieves the data from the form.
-      const data = {
-        firstName: form.firstName.value.trim(),
-        lastName: form.lastName.value.trim(),
-        age: form.age.value.trim(),
-        email: form.email.value.trim(),
-        password: form.password.value.trim(),
-        confirmPassword: form.confirmPassword.value.trim(),
-      };
-
-      // Field completion validation.
-      if (Object.values(data).some((v) => !v)) {
-        throw new Error("Please fill out all the fields.");
-      }
-
-      // Age validation.
-      const ageNum = Number(data.age);
-      if (isNaN(ageNum) || ageNum < 13) {
-        throw new Error("Age must be greater or equal to 13.");
-      }
-
-      // Password validation.
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-      if (!passwordRegex.test(data.password)) {
-        throw new Error(
-          "The password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.",
-        );
-      }
-
-      // Confirm password validation.
+      // 
       if (data.password !== data.confirmPassword) {
         throw new Error("Passwords do not match.");
       }
 
-      form.querySelector('button[type="submit"]').disabled = true;
+      formButton.disabled = true;
+      spinner.style.display = "block";
 
       await registerUser(data);
 
-      // Si llegó aquí es porque no hubo errores
-      const spinner = document.getElementById("spinner");
-      spinner.style.display = "block";
-
-      msg.textContent = "Successfully registered!";
+      //
+      msg.textContent = "Successfully registered! 🎉";
       msg.style.color = "green";
       msg.hidden = false;
-
       form.reset();
 
       setTimeout(() => {
@@ -246,55 +215,95 @@ function initRegister() {
         location.hash = "#/login";
       }, 1000);
     } catch (err) {
-      msg.textContent = err.message || "Registration failed";
+      // Trata con los errores de validacion
+      msg.textContent = err.message || "Registration failed.";
+      msg.style.color = "red";
       msg.hidden = false;
-      form.querySelector('button[type="submit"]').disabled = false;
+    } finally {
+      // Deshabilita el boton y no muestra el spinner
+      formButton.disabled = false;
+      spinner.style.display = "none";
     }
   });
 }
 
 function initLogin() {
-  const form = document.getElementById("loginForm");
-  const msg = document.getElementById("message");
+    const form = document.getElementById("loginForm");
+    const msg = document.getElementById("message");
 
-  if (!form) return;
+    if (!form) return;
 
-  // Función que maneja el login y guarda el token
-  async function handleLogin(data) {
-    try {
-      const response = await loginUser(data); // loginUser viene de userService.js
-      const token = response.token; // asumimos que el backend devuelve { token }
+    // Listens for the 'invalid' event to customize validation messages.
+    form.addEventListener("invalid", (e) => {
+        const input = e.target;
 
-      localStorage.setItem("token", token);
+        switch (input.name) {
+            case "email":
+                if (input.validity.valueMissing) {
+                    input.setCustomValidity("Email is a required field.");
+                } else if (input.validity.typeMismatch) {
+                    input.setCustomValidity("Please enter a valid email address (e.g., user@domain.com).");
+                } else {
+                    input.setCustomValidity(""); // Clears the custom error message if valid.
+                }
+                break;
+            case "password":
+                if (input.validity.valueMissing) {
+                    input.setCustomValidity("Password is a required field.");
+                } else {
+                    input.setCustomValidity("");
+                }
+                break;
+            default:
+                // Clears any other custom validation messages.
+                input.setCustomValidity("");
+                break;
+        }
+    }, true);
 
-      msg.textContent = "Successfully logged in";
-      msg.style.color = "green";
-      msg.hidden = false;
-      form.reset();
+    // Function that handles login and saves the token
+    async function handleLogin(data) {
+        const formButton = form.querySelector('button[type="submit"]');
+        try {
+            const response = await loginUser(data); // loginUser from userService.js
+            const token = response.token; // assuming the backend returns { token }
 
-      setTimeout(() => {
-        location.hash = "#/board";
-      }, 400);
-    } catch (err) {
-      msg.textContent = `Couldn't log in: ${err.message}`;
-      msg.hidden = false;
-    } finally {
-      form.querySelector('button[type="submit"]').disabled = false;
+            localStorage.setItem("token", token);
+
+            msg.textContent = "You have successfully logged in! 🎉";
+            msg.style.color = "green";
+            msg.hidden = false;
+            form.reset();
+
+            setTimeout(() => {
+                location.hash = "#/board";
+            }, 400);
+        } catch (err) {
+            // Handles login API errors
+            msg.textContent = `Could not log in: ${err.message}`;
+            msg.hidden = false;
+        } finally {
+            formButton.disabled = false;
+        }
     }
-  }
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    msg.textContent = "";
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        msg.textContent = "";
 
-    const data = {
-      email: form.email.value.trim(),
-      password: form.password.value.trim(),
-    };
+        const data = {
+            email: form.email.value.trim(),
+            password: form.password.value.trim(),
+        };
 
-    form.querySelector('button[type="submit"]').disabled = true;
-    handleLogin(data);
-  });
+        // Use checkValidity() to trigger native validation and 'invalid' events.
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        form.querySelector('button[type="submit"]').disabled = true;
+        handleLogin(data);
+    });
 }
 
 /**
