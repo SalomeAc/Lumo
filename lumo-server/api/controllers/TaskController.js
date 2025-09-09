@@ -99,7 +99,40 @@ class TaskController extends GlobalController {
         .json({ message: "Internal server error, try again later" });
     }
   }
+
+
 }
+
+/**
+ * Get all tasks in a specific list.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @return {void}
+ **/
+
+
+exports.getByList = async (req, res) => {
+  const { listId } = req.params;
+  try {
+    const tasks = await Task.find({ list: listId });
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: "Error obteaining tasks" });
+  }
+};
+
+exports.createInList = async (req, res) => {
+  const { listId } = req.params;
+  const { title, description } = req.body;
+  try {
+    const task = await Task.create({ title, description, list: listId });
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating task" });
+  }
+};
+
+
 
 /**
  * Export a singleton instance of TaskController.

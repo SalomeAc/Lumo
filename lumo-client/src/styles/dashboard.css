@@ -132,41 +132,46 @@ main {
     flex-shrink: 0;
 }
 
-#static-ul li a::before {
-    content: "";
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    flex-shrink: 0;
+#static-ul li.create-list a::before {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ec06a7;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 
 /* Colors for each section */
-#static-ul li:nth-child(3) a::before {
+#static-ul li:nth-child(2) a::before {
     background-color: #f4ad14;
    
 }
 
-#static-ul li:nth-child(4) a::before {
+#static-ul li:nth-child(3) a::before {
     background-color: #767373;
  
 }
 
-#static-ul li:nth-child(5) a::before {
+#static-ul li:nth-child(4) a::before {
     background-color: #87cf23;
 
 }
 
-#static-ul li:nth-child(6) a::before {
+#static-ul li:nth-child(5) a::before {
     background-color: #1e88e5;
     
  
 }
 
-#static-ul li:nth-child(7) a::before {
-    background-color: #1e88e5;
-}
+
 
 /* ---------------------------------- */
 /* Welcome user block */
@@ -317,19 +322,42 @@ main {
 }
 
 .modal-window {
-    background: #7b8c94;
+    background: #263238;
+    color: #ffffff;
     border-radius: 16px;
-    padding: 2rem 1.5rem;
+    padding: 3rem 4rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     min-width: 320px;
     max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     position: relative;
-    justify-items: center;
+    border: 1px solid #111827;
 
 }
 
+.form-content {
+    
+    background: #304047;
+    border-radius: 16px;
+    padding: 3rem 4rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    min-width: 320px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #111827;
+    gap: 1rem;
+}
+
 .previous-btn {
-    color: #000000;
+    color: #ffffff;
     
     position: absolute;
     left: 16px;
@@ -342,5 +370,37 @@ main {
 
     display: flex;
     align-items: center;
+}
 
+.submit-btn {
+    background-color: #ff9900;
+    color: #000000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#task-title, #task-desc, #task-date, #task-time {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+}
+
+#task-status {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
 }

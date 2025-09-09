@@ -24,4 +24,5 @@ router.post("/", (req, res) => new TaskController().createTask(req, res));
  */
 router.delete("/:id", (req, res) => new TaskController().deleteTask(req, res));
 
-module.exports = router;
+
+module.exports = router;
