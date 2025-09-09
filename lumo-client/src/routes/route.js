@@ -2,6 +2,8 @@ import {
   registerUser,
   loginUser,
   getUserProfileInfo,
+  sendRecoveryEmail,
+  resetPassword
 } from "../services/userService.js";
 import {
   createTask,
@@ -38,11 +40,8 @@ const viewStyleMap = {
   board: "board",
   profile: "profile",
   dashboard: "dashboard",
-  ongoing: "dashboard",
-  unassigned: "dashboard",
-  completed: "dashboard",
-  "create-task": "dashboard",
-  "create-list": "dashboard",
+  all: "dashboard",
+
 };
 
 /**
@@ -69,9 +68,12 @@ async function loadView(name) {
   if (name === "home") initHome();
   if (name === "register") initRegister();
   if (name === "login") initLogin();
-  if (name === "dashboard") initDashboard();
-  if (name === "create-task") initCreateTask();
-  // if (name === "profile") initProfile();
+
+  if (name === "board") initBoard();
+  if (name === "password-recovery") {
+  setTimeout(initPasswordRecovery, 0); // asegura que el form exista
+  }
+
 }
 
 /**
@@ -105,16 +107,9 @@ export function initRouter() {
  * Fallback to 'home' if the route is unknown.
  */
 function handleRoute() {
-  const path =
-    (location.hash.startsWith("#/") ? location.hash.slice(2) : "") || "home";
 
-  // Para rutas dinámicas tipo list/:id
-  const listMatch = path.match(/^list\/(.+)$/);
-  if (listMatch) {
-    const listId = listMatch[1]; // capturamos el id
-    loadView("board").then(() => initBoard(listId));
-    return;
-  }
+  const path = location.hash.startsWith("#/")
+  ? location.hash.slice(2) : location.pathname.replace(/^\/+/, ""); // elimina '/' al inicio
 
   const known = [
     "home",
@@ -122,19 +117,20 @@ function handleRoute() {
     "register",
     "password-recovery",
     "dashboard",
-    "ongoing",
-    "unassigned",
-    "completed",
-    "board",
-    "create-task",
-    "create-list",
+    "profile",
+    "all",
+    "reset-password",
+
   ];
-  const route = known.includes(path) ? path : "home";
+  // Debido a que se usa la misma pagina de recovery para mandar la recuperacion y cambiar la clave
+  // hacemos esto para que el token nos envie aca
+  const route = path === "reset-password" ? "password-recovery" : (known.includes(path) ? path : "home");
 
   loadView(route).catch((err) => {
     console.error(err);
     app.innerHTML = `<p style="color:#ffb4b4">Error loading the view.</p>`;
   });
+
 }
 
 /* ---- View-specific logic ---- */
@@ -258,38 +254,6 @@ function initRegister() {
 
   if (!form) return;
 
-  // Agarra el evento invalid para cambiar el mensaje de html y hacer uno propio
-  form.addEventListener(
-    "invalid",
-    (e) => {
-      const input = e.target;
-      // Password validation logic.
-      if (input.name === "password") {
-        const passwordRegex =
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-        if (!passwordRegex.test(input.value)) {
-          input.setCustomValidity(
-            "The password must be at least 8 characters and include an uppercase letter, lowercase letter, number and a special character.",
-          );
-        } else {
-          input.setCustomValidity("");
-        }
-      }
-      // logica del email
-      if (input.name === "email") {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(input.value)) {
-          input.setCustomValidity(
-            "Please enter a valid email address (e.g., user@domain.com).",
-          );
-        } else {
-          input.setCustomValidity("");
-        }
-      }
-    },
-    true,
-  );
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
@@ -307,7 +271,7 @@ function initRegister() {
     const formButton = form.querySelector('button[type="submit"]');
 
     try {
-      //
+-
       if (data.password !== data.confirmPassword) {
         throw new Error("Passwords do not match.");
       }
@@ -587,4 +551,91 @@ function initDashboard(listId = null) {
   }
 
   handleGetUserLists();
+}
+
+//para recover contrasena
+function initPasswordRecovery() {
+    const form = document.querySelector("form");
+    const msg = document.getElementById("message");
+    const spinner = document.getElementById("spinner");
+    if (!form) return;
+
+    const step1 = form.querySelector(".step-1");
+    const step3 = form.querySelector(".step-3");
+    const tokenInput = document.getElementById("token");
+
+    const updateTokenFromURL = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token") || "";
+        tokenInput.value = token;
+        return token;
+    };
+
+    let token = updateTokenFromURL();
+
+    if (token) {
+        step1.classList.remove("active");
+        step3.classList.add("active");
+    } else {
+        step1.classList.add("active");
+        step3.classList.remove("active");
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+        msg.hidden = true;
+        
+        const currentButton = e.submitter;
+        const formButton = currentButton; // Usar el botón que disparó el evento
+
+        try {
+            formButton.disabled = true;
+            spinner.style.display = "inline";
+
+            // Lógica para enviar el correo de recuperación (Paso 1)
+            if (currentButton.getAttribute('data-step') === '1') {
+                const email = form.querySelector("#email").value.trim();
+                if (!email) throw new Error("Please enter your email.");
+                await sendRecoveryEmail(email);
+                msg.textContent = "✅ Recovery email sent. Check your inbox.";
+                msg.style.color = "green";
+                msg.hidden = false;
+                form.querySelector("#email").value = "";
+                return;
+            }
+
+            // Lógica para resetear la contraseña (Paso 3)
+            if (currentButton.getAttribute('data-step') === '3') {
+                const newPassword = form.querySelector("#newPassword").value.trim();
+                const confirmPassword = form.querySelector("#confirmPassword").value.trim();
+                
+                if (newPassword !== confirmPassword) {
+                    throw new Error("Passwords do not match.");
+                }
+
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+                if (!passwordRegex.test(newPassword)) {
+                    throw new Error("Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+                }
+
+                await resetPassword(token, newPassword, confirmPassword);
+                
+                msg.textContent = "Password successfully reset. You can now log in.";
+                msg.style.color = "green";
+                msg.hidden = false;
+                
+                setTimeout(() => {
+                    location.hash = "#/login";
+                }, 1500);
+            }
+        } catch (err) {
+            msg.textContent = err.message || "Something went wrong.";
+            msg.style.color = "red";
+            msg.hidden = false;
+        } finally {
+            formButton.disabled = false;
+            spinner.style.display = "none";
+        }
+    });
 }

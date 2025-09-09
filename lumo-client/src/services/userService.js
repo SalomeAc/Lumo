@@ -49,3 +49,32 @@ export async function getUserProfileInfo({ email }) {
     email,
   });
 }
+
+/**
+ * Send a password recovery email.
+ * 
+ * This will trigger the backend to send a recovery email
+ * with a token/link to the user.
+ * 
+ * @param {string} email - The email of the user requesting password recovery.
+ * @returns {Promise<Object>} API response with confirmation.
+ */
+export async function sendRecoveryEmail(email) {
+  return http.post("/api/v1/users/forgot-password", { email });
+}
+
+/**
+ * Reset the password using the recovery token.
+ * 
+ * The backend validates the token and updates the password.
+ * 
+ * @param {string} token - The recovery token sent to the user's email.
+ * @param {string} newPassword - The new password chosen by the user.
+ * @returns {Promise<Object>} API response with confirmation.
+ */
+export async function resetPassword(token, newPassword, confirmPassword) {
+  return http.post(`/api/v1/users/reset-password/${token}`, {
+    newPassword,
+    confirmPassword
+  });
+}
