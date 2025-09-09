@@ -43,11 +43,6 @@ const viewStyleMap = {
   completed: "dashboard",
   "create-task": "dashboard",
   "create-list": "dashboard",
-<<<<<<< HEAD
-  "edit-task": "dashboard",
-
-=======
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
 };
 
 /**
@@ -112,10 +107,6 @@ export function initRouter() {
 function handleRoute() {
   const path =
     (location.hash.startsWith("#/") ? location.hash.slice(2) : "") || "home";
-<<<<<<< HEAD
-  const known = ["home", "login", "register", "password-recovery", "dashboard", "ongoing", "unassigned", "completed", "board",
-    "create-task", "create-list", "edit-task", "profile"
-=======
 
   // Para rutas dinámicas tipo list/:id
   const listMatch = path.match(/^list\/(.+)$/);
@@ -137,7 +128,6 @@ function handleRoute() {
     "board",
     "create-task",
     "create-list",
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
   ];
   const route = known.includes(path) ? path : "home";
 

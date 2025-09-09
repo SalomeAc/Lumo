@@ -19,8 +19,6 @@ const router = express.Router();
 router.use("/users", userRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/lists', listRoutes);
-router.use("/lists/:listId/tasks", taskRoutes);
-
 /**
  * Export the main router instance.
  * This is imported in `index.js` and mounted under `/api/v1`.

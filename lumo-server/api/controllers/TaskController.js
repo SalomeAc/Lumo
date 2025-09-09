@@ -126,8 +126,6 @@ class TaskController extends GlobalController {
       });
     }
   }
-
-
 }
 
 module.exports = new TaskController();

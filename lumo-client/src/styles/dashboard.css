@@ -123,7 +123,6 @@ main {
     flex-shrink: 0;
 }
 
-<<<<<<< HEAD
 #static-ul li.create-list a::before {
   content: "+";
   display: inline-flex;
@@ -138,57 +137,25 @@ main {
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
-=======
-#dynamic-ul li a::before {
-    content: "";
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    flex-shrink: 0;
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
 }
 
 /* Colors for each section */
-<<<<<<< HEAD
 #static-ul li:nth-child(2) a::before {
-=======
-#dynamic-ul li:nth-child(3) a::before {
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
     background-color: #f4ad14;
 }
 
-<<<<<<< HEAD
 #static-ul li:nth-child(3) a::before {
-=======
-#dynamic-ul li:nth-child(4) a::before {
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
     background-color: #767373;
 }
 
-<<<<<<< HEAD
 #static-ul li:nth-child(4) a::before {
-=======
-#dynamic-ul li:nth-child(5) a::before {
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
     background-color: #87cf23;
 }
 
-<<<<<<< HEAD
 #static-ul li:nth-child(5) a::before {
-=======
-#dynamic-ul li:nth-child(6) a::before {
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
     background-color: #1e88e5;
 }
 
-<<<<<<< HEAD
-
-=======
-#dynamic-ul li:nth-child(7) a::before {
-    background-color: #1e88e5;
-}
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
 
 /* ---------------------------------- */
 /* Welcome user block */
@@ -354,12 +321,8 @@ main {
     align-items: center;
     text-align: center;
     position: relative;
-<<<<<<< HEAD
     border: 1px solid #111827;
 
-=======
-    justify-items: center;
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
 }
 
 .form-content {
@@ -380,13 +343,8 @@ main {
 }
 
 .previous-btn {
-<<<<<<< HEAD
     color: #ffffff;
     
-=======
-    color: #000000;
-
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
     position: absolute;
     left: 16px;
     top: 18px;
@@ -399,7 +357,6 @@ main {
     display: flex;
     align-items: center;
 }
-<<<<<<< HEAD
 
 .submit-btn {
     background-color: #ff9900;
@@ -503,5 +460,3 @@ main {
     color: black;
 
 }
-=======
->>>>>>> 534db2cd99108f0cbc0ff3c7ea05b9d12e64f818
