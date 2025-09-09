@@ -36,7 +36,6 @@ const viewStyleMap = {
   register: "auth",
   "password-recovery": "auth",
   home: "home",
-  board: "board",
   profile: "profile",
   dashboard: "dashboard",
   "create-task": "create-task",
