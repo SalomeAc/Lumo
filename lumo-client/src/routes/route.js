@@ -36,7 +36,8 @@ const viewStyleMap = {
   unassigned: "dashboard",
   completed: "dashboard",
   "create-task": "dashboard",
-  "create-list": "dashboard"
+  "create-list": "dashboard",
+  "edit-task": "dashboard",
 
 };
 
@@ -101,7 +102,7 @@ function handleRoute() {
   const path =
     (location.hash.startsWith("#/") ? location.hash.slice(2) : "") || "home";
   const known = ["home", "login", "register", "password-recovery", "dashboard", "ongoing", "unassigned", "completed", "board",
-    "create-task", "create-list"
+    "create-task", "create-list", "edit-task", "profile"
   ];
   const route = known.includes(path) ? path : "home";
 

@@ -309,14 +309,15 @@ main {
 /* Modal styles for create-task */
 .modal-overlay {
     position: fixed;
-    top: 0;
+    inset: 0;
+    margin-top: 1rem;
     left: 0;
     margin-left: 5rem;
     width: 100vw;
     height: 100vh;
-
+    overflow-y: auto;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1000;
 }
@@ -325,7 +326,7 @@ main {
     background: #263238;
     color: #ffffff;
     border-radius: 16px;
-    padding: 3rem 4rem;
+    padding: 2rem 3rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     min-width: 320px;
     max-width: 90vw;
@@ -343,7 +344,7 @@ main {
     
     background: #304047;
     border-radius: 16px;
-    padding: 3rem 4rem;
+    padding: 2rem 4rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     min-width: 320px;
     max-width: 90vw;
@@ -403,4 +404,74 @@ main {
     font-size: 1rem;
     font-weight: 400;
     font-family: 'Inter', sans-serif;
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+  .modal-overlay {
+    margin-left: 0; 
+    padding: 1rem;
+  }
+
+  .modal-window {
+    width: 90vw;          
+    max-width: 90vw;
+    padding: 1rem;        
+    border-radius: 12px;
+  }
+
+  .form-content {
+    width: 100%;
+    padding: 1rem;      
+    border-radius: 12px;
+    gap: 0.8rem;
+  }
+
+  #task-title,
+  #task-desc,
+  #task-date,
+  #task-time,
+  #task-status {
+    font-size: 0.8rem;    
+    padding: 8px;
+  }
+
+  .submit-btn {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+
+  .previous-btn {
+    font-size: 0.9rem;
+    top: 10px;
+    left: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-window {
+    width: 90vw;        
+    height: 90vh;       
+    border-radius: 0;    
+    padding: 1rem;
+  }
+
+  .form-content {
+    padding: 1rem;
+  }
+
+  .submit-btn {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    margin-left: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    color: black;
+
 }
