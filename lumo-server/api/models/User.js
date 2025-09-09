@@ -13,6 +13,8 @@ const UserSchema = new mongoose.Schema(
     age: { type: Number, required: true, min: 0 }, // Edad
     email: { type: String, required: true, unique: true }, // Correo electrónico
     password: { type: String, required: true },
+    resetPasswordToken: { type: String }, //Para el recover-password
+    resetPasswordExpires: { type: Date }
   },
   {
     timestamps: true,

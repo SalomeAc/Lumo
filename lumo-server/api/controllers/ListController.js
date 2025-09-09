@@ -1,69 +1,63 @@
 const GlobalController = require("./GlobalController");
+const List = require("../models/List");
 const ListDAO = require("../dao/ListDAO");
 
-/**
- * Controller class for managing List resources.
- */
 class ListController extends GlobalController {
   constructor() {
     super(ListDAO);
   }
 
-  /**
-   * Create a new list ensuring the name is unique for the user.
-   */
+  // Create a new list
   async create(req, res) {
-    const { name, description, user } = req.body;
+    console.log("Request body received:", req.body);
+    console.log("Request headers:", req.headers);
+    
+    const { title, user } = req.body;
+    console.log("Extracted values - title:", title, "user:", user);
 
-    if (!name || !user) {
-      return res.status(400).json({ message: "Name and user are required." });
+    if (!title || !user) {
+        console.log("Validation failed - missing title or user");
+        return res.status(400).json({ 
+            message: "Title and user are required.",
+            receivedData: req.body  // Esto te mostrará exactamente qué recibió el servidor
+        });
     }
 
     try {
       // Check if list with same name exists for this user
-      const exists = await this.dao.findOne({ name, user });
+      const exists = await List.findOne({ title, user });
       if (exists) {
-        return res
-          .status(409)
-          .json({ message: "List name already exists for this user." });
+        return res.status(409).json({ 
+          message: "List name already exists for this user." 
+        });
       }
 
-      const list = await this.dao.create({ name, description, user });
-
+      const list = await List.create({ title, user });
       res.status(201).json(list);
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Internal server error: ${error.message}`);
-      }
-      res
-        .status(500)
-        .json({ message: "Internal server error, try again later" });
+      console.error("Error creating list:", error);
+      res.status(500).json({ 
+        message: "Internal server error, try again later" 
+      });
     }
   }
 
-  /**
-   * Get lists filtered by user.
-   */
+  // Get all lists for a user
   async getAll(req, res) {
     const { user } = req.query;
     if (!user) {
       return res.status(400).json({ message: "User is required." });
     }
     try {
-      const lists = await this.dao.find({ user });
+      const lists = await List.find({ user });
       res.status(200).json(lists);
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Internal server error: ${error.message}`);
-      }
-      res
-        .status(500)
-        .json({ message: "Internal server error, try again later" });
+      console.error("Error getting lists:", error);
+      res.status(500).json({ 
+        message: "Internal server error, try again later" 
+      });
     }
   }
 }
 
-/**
- * Export a singleton instance of ListController.
- */
 module.exports = new ListController();

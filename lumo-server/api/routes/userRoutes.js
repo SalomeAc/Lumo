@@ -55,6 +55,30 @@ router.delete("/:id", (req, res) => UserController.delete(req, res));
 router.post("/login", (req, res) => UserController.login(req, res));
 
 /**
+ * @route POST /users/forgot-password
+ * @description Send a password reset link to user's email.
+ * @body {string} email - The user's email.
+ * @access Public
+ */
+router.post("/forgot-password", (req, res) =>
+  UserController.forgotPassword(req, res)
+);
+
+/**
+ * @route POST /users/reset-password/:token
+ * @description Reset password using token from email.
+ * @param {string} token - The reset token sent by email.
+ * @body {string} newPassword - The new password.
+ * @body {string} confirmPassword - Confirmation of the new password.
+ * @access Public
+ */
+router.post("/reset-password/:token", (req, res) =>
+  UserController.resetPassword(req, res)
+);
+
+
+
+/**
  * Export the router instance to be mounted in the main routes file.
  */
 module.exports = router;

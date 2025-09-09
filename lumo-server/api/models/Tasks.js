@@ -1,43 +1,38 @@
 const mongoose = require("mongoose");
 
-/**
- * Task schema definition.
- *
- * Represents application tasks stored in MongoDB.
- * Includes authentication fields and automatic timestamps.
- */
 const TaskSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "A title is required"],
+      trim: true,
+      maxlength: [100, "The title cannot have more than 100 characters"],
     },
     description: {
       type: String,
+      trim: true,
+      maxlength: [1000, "The description cannot have more than 1000 characters"],
     },
-    completed: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: ["On going", "Unassigned", "Done"],
+      default: "Unassigned",
     },
     dueDate: {
-      type: Date,
+      type: Date,  // Almacena fecha y hora juntas
+    },
+    list: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "List",
+      required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    list: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "List",
-      required: true, // puedes hacerlo false si prefieres asignar después, pero mejor exigir list
-    },
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-/**
- * Mongoose model for the Task collection.
- * Provides an interface to interact with task documents.
- */
 module.exports = mongoose.model("Task", TaskSchema);

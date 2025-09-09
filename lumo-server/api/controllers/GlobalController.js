@@ -10,80 +10,103 @@ class GlobalController {
   constructor(dao) {
     this.dao = dao;
   }
+
   /**
    * Create a new document in the database.
    * @async
-   * @param {import('express').Request} req - Express request object containing the data in `req.body`.
-   * @param {import('express').Response} res - Express response object.
-   * @returns {Promise<void>} Sends status 201 with the created document, or 400 on error.
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
    */
   async create(req, res) {
-    console.log("Creating item with data:", req.body);
     try {
       const item = await this.dao.create(req.body);
       res.status(201).json(item);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      console.error(`Error in create: ${error.message}`);
+      res.status(400).json({ 
+        message: error.message || "Error creating item" 
+      });
     }
   }
+
   /**
    * Retrieve a document by ID.
    * @async
-   * @param {import('express').Request} req - Express request object with `req.params.id`.
-   * @param {import('express').Response} res - Express response object.
-   * @returns {Promise<void>} Sends status 200 with the document, or 404 if not found.
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
    */
   async read(req, res) {
     try {
       const item = await this.dao.read(req.params.id);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
       res.status(200).json(item);
     } catch (error) {
-      res.status(404).json({ message: error.message });
+      console.error(`Error in read: ${error.message}`);
+      res.status(500).json({ 
+        message: "Internal server error, try again later" 
+      });
     }
   }
+
   /**
    * Update an existing document by ID.
    * @async
-   * @param {import('express').Request} req - Express request object with `req.params.id` and update data in `req.body`.
-   * @param {import('express').Response} res - Express response object.
-   * @returns {Promise<void>} Sends status 200 with the updated document, or 400 on validation error.
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
    */
   async update(req, res) {
     try {
       const item = await this.dao.update(req.params.id, req.body);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
       res.status(200).json(item);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      console.error(`Error in update: ${error.message}`);
+      res.status(400).json({ 
+        message: error.message || "Error updating item" 
+      });
     }
   }
+
   /**
    * Delete a document by ID.
    * @async
-   * @param {import('express').Request} req - Express request object with `req.params.id`.
-   * @param {import('express').Response} res - Express response object.
-   * @returns {Promise<void>} Sends status 200 with the deleted document, or 404 if not found.
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
    */
   async delete(req, res) {
     try {
       const item = await this.dao.delete(req.params.id);
-      res.status(200).json(item);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      res.status(200).json({ message: "Item deleted successfully" });
     } catch (error) {
-      res.status(404).json({ message: error.message });
+      console.error(`Error in delete: ${error.message}`);
+      res.status(500).json({ 
+        message: "Internal server error, try again later" 
+      });
     }
   }
+
   /**
    * Retrieve all documents, optionally filtered by query parameters.
    * @async
-   * @param {import('express').Request} req - Express request object (filters in `req.query`).
-   * @param {import('express').Response} res - Express response object.
-   * @returns {Promise<void>} Sends status 200 with the array of documents, or 400 on error.
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
    */
   async getAll(req, res) {
     try {
       const items = await this.dao.getAll(req.query);
       res.status(200).json(items);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      console.error(`Error in getAll: ${error.message}`);
+      res.status(500).json({ 
+        message: "Internal server error, try again later" 
+      });
     }
   }
 }

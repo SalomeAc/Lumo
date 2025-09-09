@@ -1,140 +1,133 @@
 const GlobalController = require("./GlobalController");
 const Task = require("../models/Tasks");
 const List = require("../models/List");
-const ListDAO = require("../dao/ListDAO");
-/**
- * Controller class for managing Task resources.
- */
-class TaskController extends GlobalController {
-  constructor() {
-    super(ListDAO);
-  }
 
-  /**
-   * Creates a new task.
-   */
+class TaskController extends GlobalController {
+  // Create a new task
   async createTask(req, res) {
     try {
-      const { title, description, dueDate, user, list } = req.body;
+      const { title, description, status = "Unassigned", dueDate, user, list } = req.body;
+
       if (!title || !user) {
-        return res
-          .status(400)
-          .json({ message: "Title and user are required." });
+        return res.status(400).json({
+          message: "Title and user are required.",
+        });
       }
-      let listId = list;
-      // Si no se especifica lista, buscar o crear la lista "General Tasks" para el usuario
-      if (!listId) {
-        let generalList = await List.findOne({ name: "General Tasks", user });
-        if (!generalList) {
-          generalList = new List({ name: "General Tasks", user });
-          await generalList.save();
-        }
-        listId = generalList._id;
-      } else {
-        // Validar que la lista exista y pertenezca al usuario
-        const foundList = await List.findOne({ _id: listId, user });
-        if (!foundList) {
-          return res
-            .status(400)
-            .json({ message: "List not found or does not belong to user." });
-        }
+
+      // Validate list exists and belongs to user
+      const listExists = await List.findOne({ _id: list, user });
+      if (!listExists) {
+        return res.status(400).json({
+          message: "List not found or does not belong to user.",
+        });
       }
-      const task = new Task({
+
+      const task = await Task.create({
         title,
         description,
+        status,
         dueDate,
         user,
-        list: listId,
+        list,
       });
-      await task.save();
+
       res.status(201).json(task);
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Internal server error: ${error.message}`);
-      }
-      res
-        .status(500)
-        .json({ message: "Internal server error, try again later" });
+      console.error("Error creating task:", error);
+      res.status(500).json({
+        message: "Internal server error, try again later",
+      });
     }
   }
 
-  /**
-   * Get all existing tasks.
-   */
+  // Get all tasks (optionally filtered by list)
   async getAllTasks(req, res) {
     try {
-      const tasks = await Task.find();
+      const { user, list, status } = req.query;
+      const filter = { user };
+
+      if (list) filter.list = list;
+      if (status) filter.status = status;
+
+      const tasks = await Task.find(filter)
+        .sort({ dueDate: 1, createdAt: -1 })
+        .populate("list", "title");
 
       res.status(200).json(tasks);
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Internal server error: ${error.message}`);
-      }
-      res
-        .status(500)
-        .json({ message: "Internal server error, try again later" });
+      console.error("Error getting tasks:", error);
+      res.status(500).json({
+        message: "Internal server error, try again later",
+      });
     }
   }
 
-  /**
-   * Delete task related to the id received.
-   */
+  // Update a task
+  async updateTask(req, res) {
+    try {
+      const { id } = req.params;
+      const { title, status, dueDate, list } = req.body;
+      const userId = req.body.user; // Assuming user ID is passed in the request
+
+      const task = await Task.findOne({ _id: id, user: userId });
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+
+      // If changing lists, verify the new list exists and belongs to the user
+      if (list && list !== task.list.toString()) {
+        const listExists = await List.findOne({ _id: list, user: userId });
+        if (!listExists) {
+          return res.status(400).json({
+            message: "List not found or does not belong to user.",
+          });
+        }
+        task.list = list;
+      }
+
+      if (title) task.title = title;
+      if (status) task.status = status;
+      if (dueDate) task.dueDate = dueDate;
+
+      await task.save();
+      res.status(200).json(task);
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).json({
+        message: "Internal server error, try again later",
+      });
+    }
+  }
+
+  // Delete a task
   async deleteTask(req, res) {
     try {
       const { id } = req.params;
-      const deletedTask = await Task.findByIdAndDelete(id);
+      const { user } = req.body;
+
+      const deletedTask = await Task.findOneAndDelete({
+        _id: id,
+        user,
+      });
 
       if (!deletedTask) {
-        return res.status(404).js;
-        on({ message: "Task not found" });
+        return res.status(404).json({
+          message: "Task not found or you don't have permission",
+        });
       }
 
-      res.status(200).json({ message: "Task deleted successfully" });
+      res.status(200).json({
+        message: "Task deleted successfully",
+      });
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Internal server error: ${error.message}`);
-      }
-      res
-        .status(500)
-        .json({ message: "Internal server error, try again later" });
+      console.error("Error deleting task:", error);
+      res.status(500).json({
+        message: "Internal server error, try again later",
+      });
     }
   }
 
 
 }
 
-/**
- * Get all tasks in a specific list.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @return {void}
- **/
-
-
-exports.getByList = async (req, res) => {
-  const { listId } = req.params;
-  try {
-    const tasks = await Task.find({ list: listId });
-    res.json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: "Error obteaining tasks" });
-  }
-};
-
-exports.createInList = async (req, res) => {
-  const { listId } = req.params;
-  const { title, description } = req.body;
-  try {
-    const task = await Task.create({ title, description, list: listId });
-    res.status(201).json(task);
-  } catch (error) {
-    res.status(500).json({ message: "Error creating task" });
-  }
-};
-
-
-
-/**
- * Export a singleton instance of TaskController.
- */
-module.exports = TaskController;
+module.exports = new TaskController();
