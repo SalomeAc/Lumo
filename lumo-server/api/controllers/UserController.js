@@ -2,7 +2,9 @@ const GlobalController = require("./GlobalController");
 const UserDAO = require("../dao/UserDAO");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
 const { sendMail } = require("../utils/mailer");
+
 
 /**
  * Controller class for managing User resources.
@@ -57,7 +59,7 @@ class UserController extends GlobalController {
       const listDefault = await List.create({
         title: "Tasks",
         user: user._id,
-        isDefault: true
+        // isDefault can be added to List schema if needed
       });
 
       res.status(201).json({ id: user._id });
@@ -102,7 +104,7 @@ class UserController extends GlobalController {
         expiresIn: "1h",
       });
 
-      res.json({ token });
+      res.json({ token, userId: user._id });
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.log(`Internal server error: ${error.message}`);

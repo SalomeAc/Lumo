@@ -5,6 +5,12 @@ import {
   sendRecoveryEmail,
   resetPassword
 } from "../services/userService.js";
+import {
+  createTask,
+  createList,
+  getUserLists,
+  getListTasks,
+} from "../services/taskListService.js";
 
 const app = document.getElementById("app");
 
@@ -35,6 +41,7 @@ const viewStyleMap = {
   profile: "profile",
   dashboard: "dashboard",
   all: "dashboard",
+
 };
 
 /**
@@ -58,12 +65,15 @@ async function loadView(name) {
     loadViewCSS(styleURL(cssFileName));
   }
 
+  if (name === "home") initHome();
   if (name === "register") initRegister();
   if (name === "login") initLogin();
+
   if (name === "board") initBoard();
   if (name === "password-recovery") {
   setTimeout(initPasswordRecovery, 0); // asegura que el form exista
   }
+
 }
 
 /**
@@ -97,8 +107,10 @@ export function initRouter() {
  * Fallback to 'home' if the route is unknown.
  */
 function handleRoute() {
+
   const path = location.hash.startsWith("#/")
   ? location.hash.slice(2) : location.pathname.replace(/^\/+/, ""); // elimina '/' al inicio
+
   const known = [
     "home",
     "login",
@@ -108,6 +120,7 @@ function handleRoute() {
     "profile",
     "all",
     "reset-password",
+
   ];
   // Debido a que se usa la misma pagina de recovery para mandar la recuperacion y cambiar la clave
   // hacemos esto para que el token nos envie aca
@@ -121,6 +134,89 @@ function handleRoute() {
 }
 
 /* ---- View-specific logic ---- */
+
+/**
+ * Initialize the "home" view.
+ * Disables loguin button if the user is already logged in.
+ */
+async function initHome() {
+  const loginBtn = document.getElementById("login-button");
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    loginBtn.hidden = true;
+  }
+}
+
+async function initCreateTask() {
+  const activeListId = localStorage.getItem("activeListId");
+  const form = document.getElementById("taskForm");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Captura de fecha y hora
+    const date = form["task-date"].value;
+    const time = form["task-time"].value;
+
+    // Construcción del objeto de tarea
+    const data = {
+      title: form["task-title"].value.trim(),
+      description: form["task-desc"].value.trim(),
+      status: form["task-status"].value,
+      dueDate: `${date}T${time}:00`,
+      activeListId,
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      if (!token) throw new Error("Usuario no autenticado.");
+
+      // Llamada al servicio
+      const result = await createTask(data, token, userId);
+
+      console.log("Task creada:", result);
+      alert("Tarea creada exitosamente 🎉");
+      form.reset(); // limpiar campos después de enviar
+      // Regresar al dashboard y refrescará automáticamente
+      location.hash = "#/dashboard";
+    } catch (err) {
+      console.error("Error creando tarea:", err.message);
+      alert(`Error creando tarea: ${err.message}`);
+    }
+  });
+}
+
+async function initCreateList() {
+  const form = document.getElementById("listForm");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+      title: form["list-title"].value.trim(),
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      if (!token) throw new Error("Usuario no autenticado.");
+
+      // Llamada al servicio
+      const result = await createList(data, token, userId);
+
+      console.log("List creada:", result);
+      alert("Tarea creada exitosamente 🎉");
+      form.reset();
+    } catch (err) {
+      console.error("Error creando lista:", err.message);
+      alert(`Error creando lista: ${err.message}`);
+    }
+  });
+}
 
 /**
  * Initialize the "profile" view.
@@ -175,7 +271,7 @@ function initRegister() {
     const formButton = form.querySelector('button[type="submit"]');
 
     try {
-
+-
       if (data.password !== data.confirmPassword) {
         throw new Error("Passwords do not match.");
       }
@@ -209,121 +305,252 @@ function initRegister() {
 }
 
 function initLogin() {
-    const form = document.getElementById("loginForm");
-    const msg = document.getElementById("message");
+  const form = document.getElementById("loginForm");
+  const msg = document.getElementById("message");
 
-    if (!form) return;
+  if (!form) return;
 
-    // Listens for the 'invalid' event to customize validation messages.
-    form.addEventListener("invalid", (e) => {
-        const input = e.target;
+  // Listens for the 'invalid' event to customize validation messages.
+  form.addEventListener(
+    "invalid",
+    (e) => {
+      const input = e.target;
 
-        switch (input.name) {
-            case "email":
-                if (input.validity.valueMissing) {
-                    input.setCustomValidity("Email is a required field.");
-                } else if (input.validity.typeMismatch) {
-                    input.setCustomValidity("Please enter a valid email address (e.g., user@domain.com).");
-                } else {
-                    input.setCustomValidity(""); // Clears the custom error message if valid.
-                }
-                break;
-            case "password":
-                if (input.validity.valueMissing) {
-                    input.setCustomValidity("Password is a required field.");
-                } else {
-                    input.setCustomValidity("");
-                }
-                break;
-            default:
-                // Clears any other custom validation messages.
-                input.setCustomValidity("");
-                break;
-        }
-    }, true);
+      switch (input.name) {
+        case "email":
+          if (input.validity.valueMissing) {
+            input.setCustomValidity("Email is a required field.");
+          } else if (input.validity.typeMismatch) {
+            input.setCustomValidity(
+              "Please enter a valid email address (e.g., user@domain.com).",
+            );
+          } else {
+            input.setCustomValidity(""); // Clears the custom error message if valid.
+          }
+          break;
+        case "password":
+          if (input.validity.valueMissing) {
+            input.setCustomValidity("Password is a required field.");
+          } else {
+            input.setCustomValidity("");
+          }
+          break;
+        default:
+          // Clears any other custom validation messages.
+          input.setCustomValidity("");
+          break;
+      }
+    },
+    true,
+  );
 
-    // Function that handles login and saves the token
-    async function handleLogin(data) {
-        const formButton = form.querySelector('button[type="submit"]');
-        try {
-            const response = await loginUser(data); // loginUser from userService.js
-            const token = response.token; // assuming the backend returns { token }
+  // Function that handles login and saves the token
+  async function handleLogin(data) {
+    const formButton = form.querySelector('button[type="submit"]');
 
-            localStorage.setItem("token", token);
+    try {
+      const response = await loginUser(data); // loginUser from userService.js
+      const token = response.token; // assuming the backend returns { token }
+      const userId = response.userId;
 
-            msg.textContent = "You have successfully logged in! 🎉";
-            msg.style.color = "green";
-            msg.hidden = false;
-            form.reset();
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId);
 
-            setTimeout(() => {
-                location.hash = "#/board";
-            }, 400);
-        } catch (err) {
-            // Handles login API errors
-            msg.textContent = `Could not log in: ${err.message}`;
-            msg.hidden = false;
-        } finally {
-            formButton.disabled = false;
-        }
+      msg.textContent = "You have successfully logged in! 🎉";
+      msg.style.color = "green";
+      msg.hidden = false;
+      form.reset();
+
+      setTimeout(() => {
+        location.hash = "#/dashboard";
+      }, 400);
+    } catch (err) {
+      // Handles login API errors
+      msg.textContent = `Could not log in: ${err.message}`;
+      msg.hidden = false;
+    } finally {
+      formButton.disabled = false;
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+
+    const data = {
+      email: form.email.value.trim(),
+      password: form.password.value.trim(),
+    };
+
+    // Use checkValidity() to trigger native validation and 'invalid' events.
+    if (!form.checkValidity()) {
+      return;
     }
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        msg.textContent = "";
-
-        const data = {
-            email: form.email.value.trim(),
-            password: form.password.value.trim(),
-        };
-
-        // Use checkValidity() to trigger native validation and 'invalid' events.
-        if (!form.checkValidity()) {
-            return;
-        }
-
-        form.querySelector('button[type="submit"]').disabled = true;
-        handleLogin(data);
-    });
+    form.querySelector('button[type="submit"]').disabled = true;
+    handleLogin(data);
+  });
 }
 
 /**
  * Initialize the "board" view.
  * Sets up the todo form, input, and list with create/remove/toggle logic.
  */
-function initBoard() {
-  const form = document.getElementById("todoForm");
-  const input = document.getElementById("newTodo");
-  const list = document.getElementById("todoList");
-  if (!form || !input || !list) return;
+function initDashboard(listId = null) {
+  /**
+   * Deletes the JWT token in the local storage and redirects user to home.
+   */
+  function handleLogout() {
+    localStorage.removeItem("token");
+    location.hash = "#/home";
+  }
 
-  // Add new todo item
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const title = input.value.trim();
-    if (!title) return;
+  /**
+   * Retrieves all the user associated lists and inserts them into
+   * "dynamic-ul" then adds an event for each of them.
+   *
+   * @async
+   * @function handleGetUserLists
+   * @throws {Error} Throws an error if fetching lists fails.
+   */
+  async function handleGetUserLists() {
+    const dynamicUl = document.getElementById("dynamic-ul");
 
-    const li = document.createElement("li");
-    li.className = "todo";
-    li.innerHTML = `
-      <label>
-        <input type="checkbox" class="check">
-        <span>${title}</span>
-      </label>
-      <button class="link remove" type="button">Eliminar</button>
-    `;
-    list.prepend(li);
-    input.value = "";
-  });
+    try {
+      const response = await getUserLists(token, userId);
+      const lists = Array.isArray(response) ? response : response?.lists || [];
 
-  // Handle remove and toggle completion
-  list.addEventListener("click", (e) => {
-    const li = e.target.closest(".todo");
-    if (!li) return;
-    if (e.target.matches(".remove")) li.remove();
-    if (e.target.matches(".check"))
-      li.classList.toggle("completed", e.target.checked);
-  });
+      dynamicUl.innerHTML = ""; // limpiamos antes de agregar
+
+      lists.forEach((list) => {
+        const li = document.createElement("li");
+
+        li.textContent = list.title;
+        li.style.cursor = "pointer"; // que parezca clickable
+        li.addEventListener("click", () => {
+          localStorage.setItem("activeListId", list._id);
+          handleGetListTasks(list._id);
+        });
+
+        dynamicUl.appendChild(li);
+      });
+
+      // Auto-selecciona la lista por defecto "Tasks" o la primera disponible
+      const preferred =
+        lists.find((l) => l.title === "Tasks") || (lists.length ? lists[0] : null);
+      if (preferred) {
+        localStorage.setItem("activeListId", preferred._id);
+        handleGetListTasks(preferred._id);
+      }
+    } catch (err) {
+      console.error("Error loading user lists:", err.message);
+    }
+  }
+
+  /**
+   * Fetches all tasks associated with a given list and renders them
+   * dynamically into the DOM element with id "tasks-grid".
+   *
+   * @async
+   * @function handleGetListTasks
+   * @param {string} listId - The unique identifier of the list whose tasks will be fetched.
+   * @throws {Error} Throws an error if fetching tasks fails.
+   */
+  async function handleGetListTasks(listId) {
+    const tasksGrid = document.querySelector(".tasks-grid");
+
+    try {
+      const response = await getListTasks(listId, token, userId);
+      const tasks = Array.isArray(response) ? response : response?.tasks || [];
+
+      if (!tasksGrid) return;
+      tasksGrid.innerHTML = "";
+
+      tasks.forEach((task) => {
+        const card = document.createElement("div");
+        card.className = "task-card";
+
+        // Encabezado
+        const header = document.createElement("div");
+        header.className = "task-header";
+
+        const h3 = document.createElement("h3");
+
+        // Circle con color según status
+        const circle = document.createElement("span");
+        circle.className = "circle";
+        // Mapear estados del backend a colores
+        switch (task.status) {
+          case "Unassigned":
+            circle.classList.add("gray");
+            break;
+          case "On going":
+            circle.classList.add("yellow");
+            break;
+          case "Done":
+            circle.classList.add("green");
+            break;
+          default:
+            circle.classList.add("gray");
+        }
+
+        h3.appendChild(circle);
+        h3.appendChild(document.createTextNode(` ${task.title}`));
+        header.appendChild(h3);
+
+        // Botones
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "edit-btn";
+        editBtn.textContent = "✎";
+        // agregar listener si quieres editar
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "🗑️";
+        // agregar listener si quieres eliminar
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+        header.appendChild(actions);
+
+        // Descripción
+        const desc = document.createElement("p");
+        desc.textContent = task.description || "";
+
+        // Footer con dueDate
+        const footer = document.createElement("div");
+        footer.className = "task-footer";
+
+        const due = document.createElement("span");
+        due.className = "due-date";
+        due.textContent = `🗓️ ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}`;
+
+        footer.appendChild(due);
+
+        // Armar card
+        card.appendChild(header);
+        card.appendChild(desc);
+        card.appendChild(footer);
+
+        tasksGrid.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Error loading list tasks:", err.message);
+    }
+  }
+
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  if (!token || !userId) {
+    console.error("Usuario no autenticado.");
+    location.hash = "#/login";
+  }
+
+  handleGetUserLists();
 }
 
 //para recover contrasena

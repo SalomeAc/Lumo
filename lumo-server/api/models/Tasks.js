@@ -8,6 +8,11 @@ const TaskSchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, "The title cannot have more than 100 characters"],
     },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "The description cannot have more than 1000 characters"],
+    },
     status: {
       type: String,
       enum: ["On going", "Unassigned", "Done"],
