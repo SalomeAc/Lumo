@@ -158,33 +158,6 @@ function initRegister() {
 
   if (!form) return;
 
-  // Agarra el evento invalid para cambiar el mensaje de html y hacer uno propio
-  form.addEventListener("invalid", (e) => {
-    const input = e.target;
-    // Password validation logic.
-    if (input.name === "password") {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-      if (!passwordRegex.test(input.value)) {
-        input.setCustomValidity(
-          "The password must be at least 8 characters and include an uppercase letter, lowercase letter, number and a special character."
-        );
-      } else {
-        input.setCustomValidity("");
-      }
-    }
-    // logica del email
-    if (input.name === "email") {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(input.value)) {
-            input.setCustomValidity(
-                "Please enter a valid email address (e.g., user@domain.com)."
-            );
-        } else {
-            input.setCustomValidity("");
-        }
-    }
-  }, true);
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
@@ -202,7 +175,7 @@ function initRegister() {
     const formButton = form.querySelector('button[type="submit"]');
 
     try {
-      // 
+
       if (data.password !== data.confirmPassword) {
         throw new Error("Passwords do not match.");
       }
