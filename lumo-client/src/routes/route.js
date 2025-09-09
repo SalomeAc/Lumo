@@ -128,6 +128,7 @@ function handleRoute() {
     "board",
     "create-task",
     "create-list",
+    "edit-task",
   ];
   const route = known.includes(path) ? path : "home";
 
